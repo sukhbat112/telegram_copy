@@ -1,0 +1,58 @@
+// Prisma schema. After editing, run:  npm run db:migrate -- --name <something>
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String // a bcrypt hash — never the raw password
+  createdAt DateTime @default(now())
+
+  memberships Member[]
+  messages    Message[]
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  type      String // 'direct' (1:1) or 'group'
+  name      String? // only used for groups
+  createdAt DateTime @default(now())
+
+  members  Member[]
+  messages Message[]
+}
+
+// A join row: "this user is in this chat". One row per member per chat.
+model Member {
+  id       Int      @id @default(autoincrement())
+  chatId   Int
+  userId   Int
+  joinedAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId]) // a user can't be added to the same chat twice
+  @@index([userId]) // speeds up "which chats am I in?"
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  chatId    Int
+  senderId  Int
+  content   String
+  createdAt DateTime @default(now())
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([chatId]) // speeds up loading a chat's message history
+}

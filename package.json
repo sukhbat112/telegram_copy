@@ -1,0 +1,17 @@
+{
+  "name": "telegram-clone",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A mini Telegram clone — a learning full-stack project",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "infra:up": "docker compose up -d db redis",
+    "infra:down": "docker compose down",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
